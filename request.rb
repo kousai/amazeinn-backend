@@ -4,16 +4,18 @@ require 'json'
 
 MOCK_GUEST = '{"name":"look","password":"2222222"}'
 
-MOCK_REQUEST = 'upload-file'
+MOCK_REQUEST = 'enter-index'
+
+MOCK_ACTION = 'avatar'
 
 #edit_password
-#MOCK_INSTS = {"old_password" => "3333333", "new_password" => "1111111"}
+#MOCK_INSTS = {"old_password" => "1111111", "new_password" => "2222222"}
 
 #edit_profile
-#MOCK_INSTS = {"gender" => "male"}
+MOCK_INSTS = {"gender" => "male"}
 
 #upload_file
-MOCK_INSTS = {"action" => "avatar", "filename" => "a.jpg", "tempfile" => "xxxxxxx"}
+#MOCK_INSTS = {"action" => "avatar", "filename" => "a.jpg", "tempfile" => "xxxxxxx"}
 
 #send_message
 #MOCK_INSTS = {"message" => "Hello world!"}
@@ -33,11 +35,11 @@ MOCK_INSTS = {"action" => "avatar", "filename" => "a.jpg", "tempfile" => "xxxxxx
 #dislike_message
 #MOCK_INSTS = {"message_id" => 2}
 
-MOCK_CLIENT_ID = 'Nw==\n'
+MOCK_CLIENT_ID = 'NA==\n'
 
-MOCK_REFRESH_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJndWVzdCI6Im1vY2siLCJ0aW1lIjoiMTUzMzYzNjA1NSJ9.vWaLK9GD3S3dJxm1JcFL3vbWYmb9mIDH1PrLsWD8a0U'
+MOCK_REFRESH_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJndWVzdCI6Im1vY2siLCJ0aW1lIjoiMTUzNTA4NDY2MiJ9.gLjbu04lXXk0oUhVjPcaTyH9gC-GUKMUxZabUD8Euug'
 
-MOCK_ACCESS_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJyZWZyZXNoIjoiMTUzMzYzNjA1NSIsInRpbWUiOiIxNTMzNjM2MDU1In0.NoG0Ul78f28jcPLQfzzkZR8Y8MsfE0LVKekeSKN5Z_Y'
+MOCK_ACCESS_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJyZWZyZXNoIjoiMTUzNTA4NTc1MCIsInRpbWUiOiIxNTM1MDg1NzUwIn0.oGCH1i6VGELtPutQYk-8eJz8q0mZiKPS6oA99cr0WYY'
 
 def create_agent
     uri = URI('http://localhost:4567/api/info')
@@ -48,35 +50,21 @@ def create_agent
         "REFRESH_TOKEN" => MOCK_REFRESH_TOKEN,
         "ACCESS_TOKEN" => MOCK_ACCESS_TOKEN,
         "REQUEST" => MOCK_REQUEST,
-        "ACTION" => "avatar"
+        "ACTION" => MOCK_ACTION
     })
     req.body = {name: "mock", password: "1111111", instruction: MOCK_INSTS}.to_json
     res = http.request(req)
-    puts "response #{res.body}"
+    puts "response: #{res.body}"
+    puts "http版本：#{res.http_version}"
+    puts "响应代码： #{res.code}"
+    puts "响应信息：#{res.message}"
+    puts "uri：#{res.uri}"
+    puts "解码信息：#{res.decode_content}"
+    res.header.each do |k,v|
+      puts "#{k}:#{v}"
+    end
 rescue => e
     puts "failed #{e}"
 end
 
-#create_agent
-
-file_name = "Other.png"
-binary_file = File.open(file_name, "rb")
-begin
-  data = { filename: file_name, tempfile: binary_file }
-  url = "http://localhost:4567/api/info"
-  url = URI.parse(url)
-  req = Net::HTTP::Post.new(url.path)
-  req.initialize_http_header({
-    "CLIENT_ID" => MOCK_CLIENT_ID,
-    "REFRESH_TOKEN" => MOCK_REFRESH_TOKEN,
-    "ACCESS_TOKEN" => MOCK_ACCESS_TOKEN,
-    "REQUEST" => MOCK_REQUEST,
-    "ACTION" => "avatar"
-  })
-  req.set_form(data, "multipart/form-data")
-  res = Net::HTTP.new(url.host, url.port).start do |http|
-    http.request(req)
-  end
-ensure
-  binary_file.close
-end
+create_agent

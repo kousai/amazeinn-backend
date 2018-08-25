@@ -14,7 +14,7 @@
               var files = userfile.files;
               if(files.length == 0) return;
               var form = new FormData(); 
-              var url = "http://127.0.0.1:4567/api/upload";
+              var url = "http://127.0.0.1:4567/api/info";
               var tempfile = files[0];
               form.append("file", tempfile);
               var xhr = new XMLHttpRequest();

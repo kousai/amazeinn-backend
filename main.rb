@@ -18,6 +18,7 @@ class Guest
   property :last_login,       DateTime
   property :refresh_token,    Text
   property :access_token,     Text
+  property :last_refresh,     DateTime 
 
   property :nickname,         String
   property :gender,           String, :default  => "Other"
@@ -76,10 +77,11 @@ def token_payload(tk)
 end
 
 def guest_create(obj)
+  @res = Something::RESPONSE
   if Guest.last(:name => obj["name"]).nil?
     @emptyroom = Room.first(:isempty => true)
     if @emptyroom.nil?
-      Something.message_checkin_full
+      [200] + @res + [{failed: 1}.to_json]
     else
       @password_hash = BCrypt::Password.create(obj["password"])
       @newguest = Guest.new(:name => obj["name"],
@@ -102,17 +104,18 @@ def guest_create(obj)
           :room_num => @emptyroom.room_num)
         @emptyroom.update(:isempty => false)
       end
-      Something.message_checkin_success
+      [200] + @res + [{}.to_json]
     end
   else
-    Something.message_checkin_exist(obj["name"])
+    [200] + @res + [{failed: 2}.to_json]
   end
 end
 
 def guest_login(obj)
+  @res = Something::RESPONSE
   @guest = Guest.first(:name => obj["name"])
   if @guest.nil?
-    Something.message_login_not_exist(obj["name"])
+    [200] + @res + [{failed: 3}.to_json]
   elsif BCrypt::Password.new(@guest.password) == obj["password"]
     @now = Time.now.to_i.to_s
     @refresh_payload = { guest: obj["name"],
@@ -125,7 +128,8 @@ def guest_login(obj)
       :game_floor => Random.rand(99)+1,
       :refresh_token => @refresh_token,
       :access_token => @access_token,
-      :last_login => Time.now)
+      :last_login => Time.now,
+      :last_refresh => Time.now)
     @mems = Array.new(6)
     for i in 0..5
       @mem = Guest.first(:floor_num => @guest.game_floor, :room_num => i+1)
@@ -142,70 +146,41 @@ def guest_login(obj)
         }
       end
     end
-    @res = {
+    @data = {
       client_id: Base64.encode64(@guest._id.to_s),
+      name: @guest.name,
       refresh_token: @guest.refresh_token,
       access_token: @guest.access_token,
-      expires_in: 86399,
       avatar: @guest.avatar,
       game_floor: @guest.game_floor,
       members: @mems
     }
-    Something.message_login_success(@res)
+    [200] + @res + [{result: @data}.to_json]
   else
-    Something.message_wrong_password
-  end
-end
-
-def token_compare(obj)
-  @guest = Guest.first(:_id => Base64.decode64(obj["HTTP_CLIENT_ID"]).to_i)
-  if @guest.access_token == obj["HTTP_ACCESS_TOKEN"]
-    return false
-  else
-    Something.message_token_fail
-  end
-end
-
-def token_update(obj)
-  @guest = Guest.first(:_id => Base64.decode64(obj["HTTP_CLIENT_ID"]).to_i)
-  if @guest.refresh_token == obj["HTTP_REFRESH_TOKEN"]
-    @now = Time.now.to_i.to_s
-    @payload_old = token_payload(obj["HTTP_REFRESH_TOKEN"])
-    @payload_new = { refresh: @payload_old[0]["time"],
-                     time: @now }
-    @token_new = token_generate(@payload_new)
-    @guest.update(:access_token => @token_new)
-    @res = {
-      name: @guest.name,
-      access_token: @guest.access_token,
-      expires_in: 86399
-    }
-    Something.message_token_update_success(@res)
-  else
-    Something.message_token_fail
+    [200] + @res + [{failed: 4}.to_json]
   end
 end
 
 def guest_leave(obj)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(obj["HTTP_CLIENT_ID"]).to_i)
   if @guest.nil?
-    Something.message_login_not_exist
-  elsif @guest.access_token == obj["HTTP_ACCESS_TOKEN"]
+    [200] + @res + [{failed: 3}.to_json]
+  elsif token_compare(@guest, obj["HTTP_ACCESS_TOKEN"])
     @guest.update(:refresh_token => nil,
                   :access_token => nil)
-    Something.message_leave_success
+    [200] + @res + [{}.to_json]
   else
-    Something.message_token_fail
+    [401] + @res + [{}.to_json]
   end
 end
 
 def guest_delete(obj, pswd)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(obj["HTTP_CLIENT_ID"]).to_i)
   if BCrypt::Password.new(@guest.password) != pswd
-    Something.message_wrong_password
-  elsif @guest.access_token != obj["HTTP_ACCESS_TOKEN"]
-    Something.message_token_fail
-  else
+    [200] + @res + [{failed: 4}.to_json]
+  elsif token_compare(@guest, obj["HTTP_ACCESS_TOKEN"])
     @messages = Message.all(:guest_id => @guest._id)
     @room = Room.first(:room_floor => @guest.floor_num,
                        :room_num => @guest.room_num)
@@ -218,16 +193,51 @@ def guest_delete(obj, pswd)
       relation.destroy
     end
     @guest.destroy
-    Something.message_checkout_success
+    [200] + @res + [{}.to_json]
+  else
+    [401] + @res + [{}.to_json]
+  end
+end
+
+def token_valid(guest)
+  Time.now.to_i - Time.parse(guest.last_refresh.to_s).to_i <= 86399
+end
+
+def token_compare(guest, token)
+  if token_valid(guest) && guest.access_token == token
+    return true
+  else
+    return false
+  end
+end
+
+def token_update(obj)
+  @res = Something::RESPONSE
+  @guest = Guest.first(:_id => Base64.decode64(obj["HTTP_CLIENT_ID"]).to_i)
+  if @guest.refresh_token == obj["HTTP_REFRESH_TOKEN"]
+    @now = Time.now.to_i.to_s
+    @payload_old = token_payload(obj["HTTP_REFRESH_TOKEN"])
+    @payload_new = { refresh: @payload_old[0]["time"],
+                     time: @now }
+    @token_new = token_generate(@payload_new)
+    @guest.update(:access_token => @token_new, :last_refresh => Time.now)
+    @data = {
+      access_token: @guest.access_token
+    }
+    [200] + @res + [{result: @data}.to_json]
+  else
+    [401] + @res + [{}.to_json]
   end
 end
 
 def case_guest_info(params, req)
+  @res = Something::RESPONSE
   case req["HTTP_REQUEST"]
     when "enter-index" then enter_index(params, req)
     when "enter-room" then enter_room(params, req)
     when "edit-password" then edit_password(params, req)
     when "edit-profile" then edit_profile(params, req)
+    when "upload-file" then upload_file(params, req)
     when "send-message" then send_message(params, req)
     when "show-message" then show_message(params, req)
     when "use-lift" then use_lift(params, req)
@@ -241,11 +251,12 @@ def case_guest_info(params, req)
     when "dislike-message" then dislike_message(params, req)
     when "popular-messages" then popular_messages(params, req)
     when "popular-guests" then popular_guests(params, req)
-    else Something.message_request_fail
+    else [400] + @res + [{}.to_json]
   end
 end
 
 def enter_index(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @mems = Array.new(6)
   for i in 0..5
@@ -263,7 +274,7 @@ def enter_index(params, req)
       }
     end
   end
-  @res = {
+  @data = {
     name: @guest.name,
     created_on: DateTime.parse(@guest.created_on.to_s).strftime('%Y-%m-%d %H:%M:%S').to_s,
     last_login: DateTime.parse(@guest.last_login.to_s).strftime('%Y-%m-%d %H:%M:%S').to_s,
@@ -271,10 +282,11 @@ def enter_index(params, req)
     game_floor: @guest.game_floor,
     members: @mems
   }
-  Something.message_enter_index(@res)
+  [200] + @res + [{result: @data}.to_json]
 end
 
 def enter_room(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @mess = Message.last(:guest_id => @guest._id)
   @recent_message = {}
@@ -288,7 +300,7 @@ def enter_room(params, req)
       liked_count: @mess.liked_count
     }
   end
-  @res = {
+  @data = {
     name: @guest.name,
     nickname: @guest.nickname,
     gender: @guest.gender,
@@ -304,21 +316,23 @@ def enter_room(params, req)
     liked_num: @guest.liked_num,
     message: @recent_message
   }
-  Something.message_enter_room(@res)
+  [200] + @res + [{result: @data}.to_json]
 end
 
 def edit_password(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   if BCrypt::Password.new(@guest.password) == params["instruction"]["old_password"]
     @password_hash = BCrypt::Password.create(params["instruction"]["new_password"])
     @guest.update(:password => @password_hash)
-    Something.message_edit_password_success
+    [200] + @res + [{}.to_json]
   else
-    Something.message_edit_password_fail
+    [200] + @res + [{failed: 4}.to_json]
   end
 end
 
 def edit_profile(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @inst = params["instruction"].to_s
   @case = @inst[2,4]
@@ -332,10 +346,30 @@ def edit_profile(params, req)
     when "bg_m" then @guest.update(:bg_music => params["instruction"]["bg_music"])
     when "bg_i" then @guest.update(:bg_image => params["instruction"]["bg_image"])
   end
-  Something.message_edit_profile_success
+  [200] + @res + [{}.to_json]
+end
+
+def upload_file(params, req)
+  @res = Something::RESPONSE
+  case req["HTTP_ACTION"]
+    when "avatar" then @dir = Something::DIR_AVATAR
+    when "bg_music" then @dir = Something::DIR_BG_MUSIC
+    when "bg_image" then @dir = Something::DIR_BG_IMAGE
+  end
+  @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
+  @tempfile = params["file"]["tempfile"]
+  @filename = params["file"]["filename"]
+  @now = Time.now
+  @savename = @guest._id.to_s + '_' + @now.to_i.to_s + '_' + @now.usec.to_s + File.extname(@filename)
+  @target = @dir + @savename
+  File.new(@target, "w")
+  File.open(@target, 'w+') {|f| f.write File.read(@tempfile) }
+  @guest.update(req["HTTP_ACTION"] => @target)
+  [200] + @res + [{}.to_json]
 end
 
 def send_message(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @new_message = Message.new(
     :guest_id => @guest._id,
@@ -343,24 +377,25 @@ def send_message(params, req)
     :send_time => Time.now)
   @new_message.save
   @guest.update(:message_num => @guest.message_num + 1)
-  @res = {
+  @data = {
     message_id:@new_message.message_id,
     content: @new_message.content,
     send_time: DateTime.parse(@new_message.send_time.to_s).strftime('%Y-%m-%d %H:%M:%S').to_s,
     liked_count: @new_message.liked_count
   }
-  Something.message_send_message(@res)
+  [200] + @res + [{result: @data}.to_json]
 end
 
 def show_message(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @messages = Message.all(:guest_id => @guest._id, :order => [ :message_id.desc ])
   if @guest.message_num == 0
-    @res = nil
+    @data = nil
   else
-    @res = Array.new(@guest.message_num)
+    @data = Array.new(@guest.message_num)
     @messages.each_with_index do |message, i|
-      @res[i] = {
+      @data[i] = {
         message_id:message.message_id,
         content: message.content,
         send_time: DateTime.parse(message.send_time.to_s).strftime('%Y-%m-%d %H:%M:%S').to_s,
@@ -368,7 +403,7 @@ def show_message(params, req)
       }
     end
   end
-  Something.message_show_message(@res)
+  [200] + @res + [{result: @data}.to_json]
 end
 
 def use_lift(params, req)
@@ -384,6 +419,7 @@ def to_floor1(params, req)
 end
 
 def knock_door(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @room_owner = Guest.first(:name => params["instruction"]["name"])
   @mess = Message.last(:guest_id => @room_owner._id)
@@ -398,7 +434,7 @@ def knock_door(params, req)
       liked_count: @mess.liked_count
     }
   end
-  @res = {
+  @data = {
     name: @room_owner.name,
     nickname: @room_owner.nickname,
     gender: @room_owner.gender,
@@ -414,10 +450,11 @@ def knock_door(params, req)
     liked_num: @room_owner.liked_num,
     message: @recent_message
   }
-  Something.message_knock_door(@res)
+  [200] + @res + [{result: @data}.to_json]
 end
 
 def follow_guest(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @room_owner = Guest.first(:name => params["instruction"]["name"])
   @new_contact = Contact.new(:initiator => @guest._id,
@@ -426,10 +463,11 @@ def follow_guest(params, req)
   @new_contact.save
   @guest.update(:follow_num => @guest.follow_num + 1)
   @room_owner.update(:follower_num => @room_owner.follower_num + 1)
-  Something.message_follow_guest
+  [200] + @res + [{}.to_json]
 end
 
 def unfollow_guest(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @room_owner = Guest.first(:name => params["instruction"]["name"])
   @old_contact = Contact.first(:initiator => @guest._id,
@@ -437,55 +475,58 @@ def unfollow_guest(params, req)
   @old_contact.destroy
   @guest.update(:follow_num => @guest.follow_num - 1)
   @room_owner.update(:follower_num => @room_owner.follower_num - 1)
-  Something.message_unfollow_guest
+  [200] + @res + [{}.to_json]
 end
 
 def show_follows(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @follows = Contact.all(:initiator => @guest._id, :order => [ :contact_id.desc ])
   if @guest.follow_num == 0
-    @res = nil
+    @data = nil
   else
-    @res = Array.new(@guest.follow_num)
+    @data = Array.new(@guest.follow_num)
     @follows.each_with_index do |follow, i|
       @follow_guest = Guest.first(:_id => follow.acceptor)
-      @res[i] = {
+      @data[i] = {
         name: @follow_guest.name,
         gender: @follow_guest.gender,
         avatar: @follow_guest.avatar
       }
     end
   end
-  Something.message_show_follows(@res)
+  [200] + @res + [{result: @data}.to_json]
 end
 
 def show_followers(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @followers = Contact.all(:acceptor => @guest._id, :order => [ :contact_id.desc ])
   if @guest.follower_num == 0
-    @res = nil
+    @data = nil
   else
-    @res = Array.new(@guest.follower_num)
+    @data = Array.new(@guest.follower_num)
     @followers.each_with_index do |follower, i|
       @follower_guest = Guest.first(:_id => follower.initiator)
-      @res[i] = {
+      @data[i] = {
         name: @follower_guest.name,
         gender: @follower_guest.gender,
         avatar: @follower_guest.avatar
       }
     end
   end
-  Something.message_show_followers(@res)
+  [200] + @res + [{result: @data}.to_json]
 end
 
 def like_message(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @now = Time.now
   if @guest.last_like.nil? || @now.year != @guest.last_like.year || (@now.yday - @guest.last_like.yday) >=1
     @guest.update(:like_times => 6)
   end
   if @guest.like_times == 0
-    Something.message_no_like_time
+    [200] + @res + [{failed: 5}.to_json]
   else
     @message = Message.first(:message_id => params["instruction"]["message_id"])
     @like_guest = Guest.first(:_id => @message.guest_id)
@@ -493,18 +534,19 @@ def like_message(params, req)
     @like_guest.update(:liked_num => @like_guest.liked_num + 1)
     @guest.update(:like_times => @guest.like_times - 1,
                   :last_like => Time.now)
-    Something.message_like_message_success
+    [200] + @res + [{}.to_json]
   end
 end
 
 def dislike_message(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @now = Time.now
   if @guest.last_like.nil? || @now.year != @guest.last_like.year || (@now.yday - @guest.last_like.yday) >=1
     @guest.update(:like_times => 6)
   end
   if @guest.like_times == 0
-    Something.message_no_like_time
+    [200] + @res + [{failed: 5}.to_json]
   else
     @message = Message.first(:message_id => params["instruction"]["message_id"])
     @like_guest = Guest.first(:_id => @message.guest_id)
@@ -512,20 +554,21 @@ def dislike_message(params, req)
     @like_guest.update(:liked_num => @like_guest.liked_num - 1)
     @guest.update(:like_times => @guest.like_times - 1,
                   :last_like => Time.now)
-    Something.message_dislike_message_success
+    [200] + @res + [{}.to_json]
   end
 end
 
 def popular_messages(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @messages = Message.all(:limit => 6,  :order => [ :liked_count.desc ])
   @num = Message.count(:limit => 6,  :order => [ :liked_count.desc ])
   if @num == 0
-    @res = nil
+    @data = nil
   else
-    @res = Array.new(@num)
+    @data = Array.new(@num)
     @messages.each_with_index do |message, i|
-      @res[i] = {
+      @data[i] = {
         message_id:message.message_id,
         guest_id: message.guest_id,
         content: message.content,
@@ -534,19 +577,20 @@ def popular_messages(params, req)
       }
     end
   end
-  Something.message_popular_messages(@res)
+  [200] + @res + [{result: @data}.to_json]
 end
 
 def popular_guests(params, req)
+  @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @popular_guests = Guest.all(:limit => 6,  :order => [ :follower_num.desc ])
   @num = Guest.all(:limit => 6,  :order => [ :follower_num.desc ])
   if @num == 0
-    @res = nil
+    @data = nil
   else
-    @res = Array.new(@num)
+    @data = Array.new(@num)
     @popular_guests.each_with_index do |guest, i|
-      @res[i] = {
+      @data[i] = {
         name: guest.name,
         gender: guest.gender,
         avatar: guest.avatar,
@@ -554,7 +598,7 @@ def popular_guests(params, req)
       }
     end
   end
-  Something.message_popular_guests(@res)
+  [200] + @res + [{result: @data}.to_json]
 end
 
 DataMapper.finalize
@@ -577,61 +621,74 @@ get '/' do
            '<h2>List of Guests</h2>' + @list_guests
 end
 
+options '/api/checkin' do
+  @res = Something::RESPONSE
+  [204] + @res + [{}.to_json]
+end
+
 post '/api/checkin' do
-  @params = JSON.parse(request.body.read)
-  guest_create(@params)
+  @body = JSON.parse(request.body.read)
+  guest_create(@body)
+end
+
+options '/api/enter' do
+  @res = Something::RESPONSE
+  [204] + @res + [{}.to_json]
 end
 
 post '/api/enter' do
-  @params = JSON.parse(request.body.read)
-  guest_login(@params)
+  @body = JSON.parse(request.body.read)
+  guest_login(@body)
+end
+
+options '/api/leave' do
+  @res = Something::RESPONSE
+  [204] + @res + [{}.to_json]
 end
 
 post '/api/leave' do
-  @req = JSON.parse(request.env.to_json)
-  guest_leave(@req)
+  @header = JSON.parse(request.env.to_json)
+  guest_leave(@header)
+end
+
+options '/api/checkout' do
+  @res = Something::RESPONSE
+  [204] + @res + [{}.to_json]
 end
 
 post '/api/checkout' do
-  @params = JSON.parse(request.body.read)
-  @req = JSON.parse(request.env.to_json)
-  guest_delete(@req, @params["password"])
+  @body = JSON.parse(request.body.read)
+  @header = JSON.parse(request.env.to_json)
+  guest_delete(@header, @body["password"])
 end
 
-post '/api/info' do
-  @params = JSON.parse(request.body.read)
-  @req = JSON.parse(request.env.to_json)
-  if @res = token_compare(@req)
-    @res
-  else
-    case_guest_info(@params, @req)
-  end
+options '/api/refresh' do
+  @res = Something::RESPONSE
+  [204] + @res + [{}.to_json]
 end
 
 post '/api/refresh' do
-  @req = JSON.parse(request.env.to_json)
-  token_update(@req)
+  @header = JSON.parse(request.env.to_json)
+  token_update(@header)
 end
 
-post '/api/upload' do
-  @req = JSON.parse(request.env.to_json)
-  if @res = token_compare(@req)
-    @res
+options '/api/info' do
+  @res = Something::RESPONSE
+  [204] + @res + [{}.to_json]
+end
+
+post '/api/info' do
+  @res = Something::RESPONSE
+  if params["file"].nil?
+    @body = JSON.parse(request.body.read)
   else
-    case @req["HTTP_ACTION"]
-      when "avatar" then @dir = Something::DIR_AVATAR
-      when "bg_music" then @dir = Something::DIR_BG_MUSIC
-      when "bg_image" then @dir = Something::DIR_BG_IMAGE
-    end
-    @guest = Guest.first(:_id => Base64.decode64(@req["HTTP_CLIENT_ID"]).to_i)
-    @tempfile = params["file"]["tempfile"]
-    @filename = params["file"]["filename"]
-    @now = Time.now
-    @savename = @guest._id.to_s + '_' + @now.to_i.to_s + '_' + @now.usec.to_s + File.extname(@filename)
-    @target = @dir + @savename
-    File.new(@target, "w")
-    File.open(@target, 'w+') {|f| f.write File.read(@tempfile) }
-    @guest.update(@req["action"] => @target)
-    Something.message_upload_file_success
+    @body = params
+  end
+  @header = JSON.parse(request.env.to_json)
+  @guest = Guest.first(:_id => Base64.decode64(@header["HTTP_CLIENT_ID"]).to_i)
+  if token_compare(@guest, @header["HTTP_ACCESS_TOKEN"])
+    case_guest_info(@body, @header)
+  else
+    [401] + @res + [{}.to_json]
   end
 end
