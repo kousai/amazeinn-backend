@@ -6,6 +6,8 @@ module Something
 
   DIR_RAND = './models/rand.txt'
 
+  EXPIRE_TIME = 5
+
   DIR_AVATAR = 'static/images/avatar/'
 
   DIR_BG_MUSIC = 'static/music/bg_music/'

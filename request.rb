@@ -4,15 +4,15 @@ require 'json'
 
 MOCK_GUEST = '{"name":"look","password":"2222222"}'
 
-MOCK_REQUEST = 'enter-index'
+MOCK_REQUEST = 'edit-password'
 
 MOCK_ACTION = 'avatar'
 
 #edit_password
-#MOCK_INSTS = {"old_password" => "1111111", "new_password" => "2222222"}
+MOCK_INSTS = {"oldPassword" => "111111111", "newPpassword" => "111111111"}
 
 #edit_profile
-MOCK_INSTS = {"gender" => "male"}
+#MOCK_INSTS = {"gender" => "male"}
 
 #upload_file
 #MOCK_INSTS = {"action" => "avatar", "filename" => "a.jpg", "tempfile" => "xxxxxxx"}
@@ -52,7 +52,7 @@ def create_agent
         "REQUEST" => MOCK_REQUEST,
         "ACTION" => MOCK_ACTION
     })
-    req.body = {name: "mock", password: "1111111", instruction: MOCK_INSTS}.to_json
+    req.body = {name: "mocker", password: "111111111", instruction: MOCK_INSTS}.to_json
     res = http.request(req)
     puts "response: #{res.body}"
     puts "http版本：#{res.http_version}"

@@ -78,13 +78,13 @@ end
 
 def guest_create(obj)
   @res = Something::RESPONSE
-  if Guest.last(:name => obj["name"]).nil?
+  if Guest.last(:name => obj["username"]).nil?
     @emptyroom = Room.first(:isempty => true)
     if @emptyroom.nil?
       [200] + @res + [{failed: 1}.to_json]
     else
       @password_hash = BCrypt::Password.create(obj["password"])
-      @newguest = Guest.new(:name => obj["name"],
+      @newguest = Guest.new(:name => obj["username"],
         :password => @password_hash,
         :created_on => Time.now,
         :isreal => true)
@@ -113,12 +113,12 @@ end
 
 def guest_login(obj)
   @res = Something::RESPONSE
-  @guest = Guest.first(:name => obj["name"])
+  @guest = Guest.first(:name => obj["username"])
   if @guest.nil?
     [200] + @res + [{failed: 3}.to_json]
   elsif BCrypt::Password.new(@guest.password) == obj["password"]
     @now = Time.now.to_i.to_s
-    @refresh_payload = { guest: obj["name"],
+    @refresh_payload = { guest: obj["username"],
                          time: @now }
     @refresh_token = token_generate(@refresh_payload)
     @access_payload = { refresh: @now,
@@ -200,7 +200,7 @@ def guest_delete(obj, pswd)
 end
 
 def token_valid(guest)
-  Time.now.to_i - Time.parse(guest.last_refresh.to_s).to_i <= 86399
+  Time.now.to_i - Time.parse(guest.last_refresh.to_s).to_i <= Something::EXPIRE_TIME
 end
 
 def token_compare(guest, token)
@@ -322,8 +322,8 @@ end
 def edit_password(params, req)
   @res = Something::RESPONSE
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
-  if BCrypt::Password.new(@guest.password) == params["instruction"]["old_password"]
-    @password_hash = BCrypt::Password.create(params["instruction"]["new_password"])
+  if BCrypt::Password.new(@guest.password) == params["instruction"]["oldPassword"]
+    @password_hash = BCrypt::Password.create(params["instruction"]["newPassword"])
     @guest.update(:password => @password_hash)
     [200] + @res + [{}.to_json]
   else
