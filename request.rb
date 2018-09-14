@@ -4,30 +4,29 @@ require 'json'
 
 MOCK_GUEST = '{"name":"look","password":"2222222"}'
 
-MOCK_REQUEST = 'edit-password'
+MOCK_REQUEST = 'enter-index'
 
 MOCK_ACTION = 'avatar'
 
 #edit_password
-MOCK_INSTS = {"oldPassword" => "111111111", "newPpassword" => "111111111"}
+#MOCK_INSTS = {"oldPassword" => "111111111", "newPpassword" => "111111111"}
 
 #edit_profile
-#MOCK_INSTS = {"gender" => "male"}
+MOCK_INSTS = {"gender" => "male"}
 
 #upload_file
-#MOCK_INSTS = {"action" => "avatar", "filename" => "a.jpg", "tempfile" => "xxxxxxx"}
+#upload.html
 
 #send_message
 #MOCK_INSTS = {"message" => "Hello world!"}
 
-#knock_door
-#MOCK_INSTS = {"name" => "test"}
-
+#enter_room
+#show_message
 #follow_guest
-#MOCK_INSTS = {"name" => "test"}
-
 #unfollow_guest
-#MOCK_INSTS = {"name" => "test"}
+#show_follows
+#show_followers
+#MOCK_INSTS = {"id" => "OTI=\n"}
 
 #like_message
 #MOCK_INSTS = {"message_id" => 1}
