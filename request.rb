@@ -4,41 +4,41 @@ require 'json'
 
 MOCK_GUEST = '{"name":"look","password":"2222222"}'
 
-MOCK_REQUEST = 'enter-index'
+MOCK_REQUEST = 'dislike-message'
 
 MOCK_ACTION = 'avatar'
 
 #edit_password
-#MOCK_INSTS = {"oldPassword" => "111111111", "newPpassword" => "111111111"}
+#MOCK_INSTS = {oldPassword: "111111111", newPpassword: "111111111"}.to_json
 
 #edit_profile
-MOCK_INSTS = {"gender" => "male"}
+#MOCK_INSTS = {gender: "male"}.to_json
 
 #upload_file
 #upload.html
 
 #send_message
-#MOCK_INSTS = {"message" => "Hello world!"}
+#MOCK_INSTS = {message: "Hello world!"}.to_json
 
 #enter_room
-#show_message
+#show_messages
 #follow_guest
 #unfollow_guest
 #show_follows
 #show_followers
-#MOCK_INSTS = {"id" => "OTI=\n"}
+#MOCK_INSTS = {id: "OTI=\n"}.to_json
 
 #like_message
-#MOCK_INSTS = {"message_id" => 1}
+#MOCK_INSTS = {message_id: 1}.to_json
 
 #dislike_message
-#MOCK_INSTS = {"message_id" => 2}
+MOCK_INSTS = {message_id: 2}.to_json
 
-MOCK_CLIENT_ID = 'NA==\n'
+MOCK_CLIENT_ID = 'MTIx\n'
 
 MOCK_REFRESH_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJndWVzdCI6Im1vY2siLCJ0aW1lIjoiMTUzNTA4NDY2MiJ9.gLjbu04lXXk0oUhVjPcaTyH9gC-GUKMUxZabUD8Euug'
 
-MOCK_ACCESS_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJyZWZyZXNoIjoiMTUzNTA4NTc1MCIsInRpbWUiOiIxNTM1MDg1NzUwIn0.oGCH1i6VGELtPutQYk-8eJz8q0mZiKPS6oA99cr0WYY'
+MOCK_ACCESS_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJyZWZyZXNoIjoiMTUzNzU4MDMwOSIsInRpbWUiOiIxNTM3NTgwMzA5In0.nRQnGU_Ldg561cHrQFrJUfRPZOzVGRilZ197eR4Wxr8'
 
 def create_agent
     uri = URI('http://localhost:4567/api/info')
@@ -51,7 +51,7 @@ def create_agent
         "REQUEST" => MOCK_REQUEST,
         "ACTION" => MOCK_ACTION
     })
-    req.body = {name: "mocker", password: "111111111", instruction: MOCK_INSTS}.to_json
+    req.body = {username: "mocker", password: "111111111", instruction: MOCK_INSTS}.to_json
     res = http.request(req)
     puts "response: #{res.body}"
     puts "http版本：#{res.http_version}"

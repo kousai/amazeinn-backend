@@ -6,7 +6,9 @@ module Something
 
   DIR_RAND = './models/rand.txt'
 
-  EXPIRE_TIME = 5
+  EXPIRE_TIME = 86399
+
+  MAIN_URL = 'http://localhost:4567/'
 
   DIR_AVATAR = 'static/images/avatar/'
 

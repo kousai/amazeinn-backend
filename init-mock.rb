@@ -5,4 +5,4 @@ for i in 0..99
     @obj = {"username" => @name, "password" => "111111111"}
     @res = guest_create(@obj)
     puts 'mock'+i.to_s+'  OK! '+@res.to_s
-  end
+end
