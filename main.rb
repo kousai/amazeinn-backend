@@ -441,10 +441,11 @@ def upload_file(params, req)
   @filename = params["file"]["filename"]
   @now = Time.now
   @savename = @guest._id.to_s + '_' + @now.to_i.to_s + '_' + @now.usec.to_s + File.extname(@filename)
-  @target = File.join(@dir, @savename)
-  FileUtils.mkdir_p(@dir) unless File.exist?(@dir) 
+  @path = File.join(File.dirname(__FILE__), @dir)
+  @target = File.join(@path, @savename)
+  FileUtils.mkdir_p(@path) unless File.exist?(@path)
   File.open(@target, 'w+') {|f| f.write File.read(@tempfile) }
-  @url = base_url() + @target
+  @url = base_url() + File.join(@dir, @savename)
   @guest.update(req["HTTP_ACTION"] => @url)
   [200] + @res + [{}.to_json]
 end
