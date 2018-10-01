@@ -441,9 +441,8 @@ def upload_file(params, req)
     when "bg_music" then @dir = File.join File.dirname(__FILE__), 'static', 'music', 'bg_music'
     when "bg_image" then @dir = File.join File.dirname(__FILE__), 'static', 'images', 'bg_image'
   end
-  @path = File.join(File.dirname(__FILE__), @dir)
-  @target = File.join(@path, @savename)
-  FileUtils.mkdir_p(@path) unless File.exist?(@path)
+  @target = File.join(@dir, @savename)
+  FileUtils.mkdir_p(@dir) unless File.exist?(@dir)
   File.open(@target, 'w+') {|f| f.write File.read(@tempfile) }
   case req["HTTP_ACTION"]
     when "avatar" then @url = base_url() + Something::AVATAR_URL + @savename
@@ -452,7 +451,6 @@ def upload_file(params, req)
   end
   @guest.update(req["HTTP_ACTION"] => @url)
   puts @dir
-  puts @path
   puts @target
   puts @url
   [200] + @res + [{}.to_json]
