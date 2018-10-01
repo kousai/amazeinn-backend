@@ -733,7 +733,7 @@ def init_mock(num)
     @res = guest_create(@obj)
     @guest = Guest.last(:name => @name)
     @genders = ['Male', 'Female', 'Other']
-    @guest.update(:isreal => false, :gender => @genders[Random.rand(0,2)])
+    @guest.update(:isreal => false, :gender => @genders[Random.randint(0,2)])
     puts 'mock'+(i+1).to_s+': '+@name+'  Created! '
   }
   'Complete!'
