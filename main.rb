@@ -431,22 +431,30 @@ end
 
 def upload_file(params, req)
   @res = Something::RESPONSE
-  case req["HTTP_ACTION"]
-    when "avatar" then @dir = File.join File.dirname(__FILE__), 'static', 'images', 'avatar'
-    when "bg_music" then @dir = File.join File.dirname(__FILE__), 'static', 'music', 'bg_music'
-    when "bg_image" then @dir = File.join File.dirname(__FILE__), 'static', 'images', 'bg_image'
-  end
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @tempfile = params["file"]["tempfile"]
   @filename = params["file"]["filename"]
   @now = Time.now
   @savename = @guest._id.to_s + '_' + @now.to_i.to_s + '_' + @now.usec.to_s + File.extname(@filename)
+  case req["HTTP_ACTION"]
+    when "avatar" then @dir = File.join File.dirname(__FILE__), 'static', 'images', 'avatar'
+    when "bg_music" then @dir = File.join File.dirname(__FILE__), 'static', 'music', 'bg_music'
+    when "bg_image" then @dir = File.join File.dirname(__FILE__), 'static', 'images', 'bg_image'
+  end
   @path = File.join(File.dirname(__FILE__), @dir)
   @target = File.join(@path, @savename)
   FileUtils.mkdir_p(@path) unless File.exist?(@path)
   File.open(@target, 'w+') {|f| f.write File.read(@tempfile) }
-  @url = base_url() + File.join(@dir, @savename)
+  case req["HTTP_ACTION"]
+    when "avatar" then @url = base_url() + Something::AVATAR_URL + @savename
+    when "bg_music" then @url = base_url() + Something::BG_MUSIC_URL + @savename
+    when "bg_image" then @url = base_url() + Something::BG_IMAGE_URL + @savename
+  end
   @guest.update(req["HTTP_ACTION"] => @url)
+  puts @dir
+  puts @path
+  puts @target
+  puts @url
   [200] + @res + [{}.to_json]
 end
 
