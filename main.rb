@@ -433,17 +433,17 @@ end
 def upload_file(params, req)
   @res = Something::RESPONSE
   case req["HTTP_ACTION"]
-    when "avatar" then @dir = Something::DIR_AVATAR
-    when "bg_music" then @dir = Something::DIR_BG_MUSIC
-    when "bg_image" then @dir = Something::DIR_BG_IMAGE
+    when "avatar" then @dir = File.join File.dirname(__FILE__), 'static', 'images', 'avatar'
+    when "bg_music" then @dir = File.join File.dirname(__FILE__), 'static', 'music', 'bg_music'
+    when "bg_image" then @dir = File.join File.dirname(__FILE__), 'static', 'images', 'bg_image'
   end
   @guest = Guest.first(:_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i)
   @tempfile = params["file"]["tempfile"]
   @filename = params["file"]["filename"]
   @now = Time.now
   @savename = @guest._id.to_s + '_' + @now.to_i.to_s + '_' + @now.usec.to_s + File.extname(@filename)
-  @target = @dir + @savename
-  File.new(@target, "w")
+  @target = File.join(@dir, @savename)
+  FileUtils.mkdir_p(@dir) unless File.exist?(@dir) 
   File.open(@target, 'w+') {|f| f.write File.read(@tempfile) }
   @url = base_url() + @target
   @guest.update(req["HTTP_ACTION"] => @url)

@@ -12,12 +12,6 @@ module Something
 
   PROD_URL = 'https://amazeinn-backend.herokuapp.com/'
 
-  DIR_AVATAR = 'static/images/avatar/'
-
-  DIR_BG_MUSIC = 'static/music/bg_music/'
-
-  DIR_BG_IMAGE = 'static/images/bg_image/'
-
   RESPONSE = [{"Access-Control-Allow-Origin" => "*", "Access-Control-Allow-Headers" => "Origin, X-Requested-With, Content-Type, Accept, CLIENT_ID, REFRESH_TOKEN, ACCESS_TOKEN, REQUEST, ACTION", "Access-Control-Allow-Methods" => "POST,GET,OPTIONS", "Content-Type" => "application/json;charset=utf-8"}]
 
   def Something.calculate_floor(num)
