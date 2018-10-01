@@ -4,7 +4,7 @@ require 'bcrypt'
 require 'json'
 require 'jwt'
 require 'base64'
-require './support'
+require File.dirname(__FILE__)+'/support'
 
 
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/models/amazeinn.db")
@@ -711,6 +711,49 @@ def popular_guests(params, req)
     end
   end
   [200] + @res + [{result: @data}.to_json]
+end
+
+def init_random(num)
+  @nums = Array.new(num)
+  @i = 0
+  while @i < num  do
+    @nums[@i] = @i
+    @i += 1
+  end
+  @nums.sort! { |x,y| Random.rand() <=> 0.5 }
+  File.open("rand.txt", 'w') do |f|
+    @i = 0
+    while @i < num  do
+      f.puts @nums[@i]
+      @i += 1
+    end
+  end
+  'Complete!'
+end
+
+def init_room(num)
+  @i = 0
+  while @i < num  do
+    @init = Room.new(:room_floor => (@i/6+1), :room_num => ((@i+1)%6==0?6:(@i+1)%6))
+    @init.save
+    puts 'floor'+(@i/6+1).to_s+'  room'+((@i+1)%6==0?6:(@i+1)%6).to_s+'  OK!'
+    @i += 1
+  end
+  'Complete!'
+end
+
+def init_mock(num)
+  @i = 0
+  while @i < num  do
+    @name = (@i+100).to_s
+    @obj = {"username" => @name, "password" => "111111111"}
+    @res = guest_create(@obj)
+    @guest = Guest.last(:name => @name)
+    @guest.update(:isreal => false)
+    puts 'mock'+@i.to_s+'  OK! '
+    @i += 1
+  end
+  'Complete!'
 end
 
 DataMapper.finalize

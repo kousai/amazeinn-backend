@@ -4,7 +4,7 @@ module Something
 
   SECRET = 'my$ecretK3y=AMazeInn'
 
-  DIR_RAND = './models/rand.txt'
+  DIR_RAND = 'rand.txt'
 
   EXPIRE_TIME = 86399
 
