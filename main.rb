@@ -714,35 +714,27 @@ def popular_guests(params, req)
 end
 
 def init_random(num)
-  @nums = Array.new(num)
-  @i = 0
-  while @i < num  do
-    @nums[@i] = @i
-    @i += 1
-  end
-  @nums.sort! { |x,y| Random.rand() <=> 0.5 }
-  File.open("rand.txt", 'w') do |f|
-    @i = 0
-    while @i < num  do
-      f.puts @nums[@i]
-      @i += 1
-    end
-  end
-  'Complete!'
+  Something.init_rand(num)
 end
 
 def init_room(num)
-  @i = 0
-  while @i < num  do
-    @init = Room.new(:room_floor => (@i/6+1), :room_num => ((@i+1)%6==0?6:(@i+1)%6))
+  0.upto(num-1) { |i|
+    @init = Room.new(:room_floor => Something.calculate_floor(i), :room_num => Something.calculate_room(i))
     @init.save
-    puts 'floor'+(@i/6+1).to_s+'  room'+((@i+1)%6==0?6:(@i+1)%6).to_s+'  OK!'
-    @i += 1
-  end
+    puts 'floor'+Something.calculate_floor(i).to_s+'  room'+Something.calculate_room(i).to_s+'  OK!'
+  }
   'Complete!'
 end
 
 def init_mock(num)
+  0.upto(num-1) { |i|
+    @name = Something.new_str(6)
+    @obj = {"username" => @name, "password" => "111111111"}
+    @res = guest_create(@obj)
+    @guest = Guest.last(:name => @name)
+    @guest.update(:isreal => false)
+    puts 'mock'+@i.to_s+': '+@name+'  Created! '
+  }
   @i = 0
   while @i < num  do
     @name = (@i+100).to_s

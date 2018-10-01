@@ -26,4 +26,21 @@ module Something
     (num+1)%6==0?6:(num+1)%6
   end
 
+  def Something.init_rand(num)
+    @nums = Array.new(num)
+    0.upto(num-1) { |i| @nums[i] = i }
+    @nums.sort! { |x,y| Random.rand() <=> 0.5 }
+    File.open("rand.txt", 'w') do |f|
+      0.upto(num-1) { |i| f.puts @nums[i] }
+    end
+    'Complete!'
+  end
+
+  def Something.new_str(len)
+    @chars = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a
+    @newstr = ""
+    1.upto(len) { |i| @newstr << @chars[rand(@chars.size-1)] }
+    return @newstr
+  end
+
 end
