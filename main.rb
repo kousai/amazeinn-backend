@@ -94,6 +94,14 @@ def token_payload(tk)
   JWT.decode(tk, Something::SECRET, true, { algorithm: 'HS256' })
 end
 
+def base_url()
+  if ENV['DATABASE_URL'].nil?
+    return Something::DEV_URL
+  else
+    return Something::PROD_URL
+  end
+end
+
 def guest_create(obj)
   @res = Something::RESPONSE
   if Guest.last(:name => obj["username"]).nil?
@@ -437,7 +445,7 @@ def upload_file(params, req)
   @target = @dir + @savename
   File.new(@target, "w")
   File.open(@target, 'w+') {|f| f.write File.read(@tempfile) }
-  @url = Something::MAIN_URL + @target
+  @url = base_url() + @target
   @guest.update(req["HTTP_ACTION"] => @url)
   [200] + @res + [{}.to_json]
 end

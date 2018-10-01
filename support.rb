@@ -8,9 +8,9 @@ module Something
 
   EXPIRE_TIME = 86399
 
-  # MAIN_URL = 'http://localhost:4567/'
+  DEV_URL = 'http://localhost:4567/'
 
-  MAIN_URL = 'https://amazeinn-backend.herokuapp.com/'
+  PROD_URL = 'https://amazeinn-backend.herokuapp.com/'
 
   DIR_AVATAR = 'static/images/avatar/'
 
