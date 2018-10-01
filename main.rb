@@ -622,7 +622,7 @@ end
 
 def show_thumbups(params, req)
   @thumbs = Thumb.all(:guest_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i, :isthumbup => true, :order => [ :thumb_id.desc ])
-  @num = Thumb.count(:guest_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i, :isthumbup => true)
+  @num = @thumbs.length
   if @num == 0
     @data = []
   else
@@ -647,7 +647,7 @@ end
 
 def show_thumbdowns(params, req)
   @thumbs = Thumb.all(:guest_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i, :isthumbup => false, :order => [ :thumb_id.desc ])
-  @num = Thumb.count(:guest_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i, :isthumbup => false)
+  @num = @thumbs.length
   if @num == 0
     @data = []
   else
@@ -672,13 +672,13 @@ end
 
 def popular_messages(params, req)
   @res = Something::RESPONSE
-  @messages = Message.all(:limit => 6, :order => [ :liked_count.desc ])
-  @num = Message.count(:limit => 6, :order => [ :liked_count.desc ])
+  @popular_messages = Message.all(:limit => 6, :order => [ :liked_count.desc ])
+  @num = @popular_messages.length
   if @num == 0
     @data = []
   else
     @data = Array.new(@num)
-    @messages.each_with_index do |message, i|
+    @popular_messages.each_with_index do |message, i|
       @guest = Guest.last(:_id => message.guest_id)
       @thumb = Thumb.last(:guest_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i, :message_id => message.message_id)
       if @thumb.nil?
@@ -706,7 +706,7 @@ end
 def popular_guests(params, req)
   @res = Something::RESPONSE
   @popular_guests = Guest.all(:limit => 6, :order => [ :follower_num.desc ])
-  @num = Guest.all(:limit => 6, :order => [ :follower_num.desc ])
+  @num = @popular_guests.length
   if @num == 0
     @data = []
   else
