@@ -733,18 +733,8 @@ def init_mock(num)
     @res = guest_create(@obj)
     @guest = Guest.last(:name => @name)
     @guest.update(:isreal => false)
-    puts 'mock'+@i.to_s+': '+@name+'  Created! '
+    puts 'mock'+i.to_s+': '+@name+'  Created! '
   }
-  @i = 0
-  while @i < num  do
-    @name = (@i+100).to_s
-    @obj = {"username" => @name, "password" => "111111111"}
-    @res = guest_create(@obj)
-    @guest = Guest.last(:name => @name)
-    @guest.update(:isreal => false)
-    puts 'mock'+@i.to_s+'  OK! '
-    @i += 1
-  end
   'Complete!'
 end
 
