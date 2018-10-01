@@ -451,10 +451,6 @@ def upload_file(params, req)
     when "bg_image" then @url = base_url() + Something::BG_IMAGE_URL + @savename
   end
   @guest.update(req["HTTP_ACTION"] => @url)
-  puts @dir
-  puts @path
-  puts @target
-  puts @url
   [200] + @res + [{}.to_json]
 end
 

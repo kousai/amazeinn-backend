@@ -18,7 +18,10 @@ module Something
 
   BG_IMAGE_URL = 'static/images/bg_image/'
 
-  RESPONSE = [{"Access-Control-Allow-Origin" => "*", "Access-Control-Allow-Headers" => "Origin, X-Requested-With, Content-Type, Accept, CLIENT_ID, REFRESH_TOKEN, ACCESS_TOKEN, REQUEST, ACTION", "Access-Control-Allow-Methods" => "POST,GET,OPTIONS", "Content-Type" => "application/json;charset=utf-8"}]
+  RESPONSE = [{"Access-Control-Allow-Origin" => "*",
+    "Access-Control-Allow-Headers" => "Origin, X-Requested-With, Content-Type, Accept, CLIENT_ID, REFRESH_TOKEN, ACCESS_TOKEN, REQUEST, ACTION",
+    "Access-Control-Allow-Methods" => "POST,GET,OPTIONS",
+    "Content-Type" => "application/json;charset=utf-8"}]
 
   def Something.calculate_floor(num)
     num/6+1
