@@ -733,7 +733,7 @@ def init_mock(num)
     @res = guest_create(@obj)
     @guest = Guest.last(:name => @name)
     @guest.update(:isreal => false)
-    puts 'mock'+i.to_s+': '+@name+'  Created! '
+    puts 'mock'+(i+1).to_s+': '+@name+'  Created! '
   }
   'Complete!'
 end
