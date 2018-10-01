@@ -2,7 +2,7 @@ module Something
 
   GUESTS_LIMIT = 594
 
-  SECRET = 'my$ecretK3y=AMazeInn'
+  SECRET = 'My$ecretK3y=AMazeInn'
 
   DIR_RAND = 'rand.txt'
 

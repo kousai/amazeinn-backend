@@ -6,7 +6,6 @@ require 'jwt'
 require 'base64'
 require File.dirname(__FILE__)+'/support'
 
-
 DataMapper.setup(:default, ENV['DATABASE_URL'] || "sqlite3://#{Dir.pwd}/models/amazeinn.db")
 
 class Guest
