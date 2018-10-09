@@ -1,4 +1,4 @@
-module Something
+module Constants
 
   GUESTS_LIMIT = 594
 
@@ -19,19 +19,19 @@ module Something
   BG_IMAGE_URL = 'static/images/bg_image/'
 
   RESPONSE = [{"Access-Control-Allow-Origin" => "*",
-    "Access-Control-Allow-Headers" => "Origin, X-Requested-With, Content-Type, Accept, CLIENT_ID, REFRESH_TOKEN, ACCESS_TOKEN, REQUEST, ACTION",
-    "Access-Control-Allow-Methods" => "POST,GET,OPTIONS",
-    "Content-Type" => "application/json;charset=utf-8"}]
+               "Access-Control-Allow-Headers" => "Origin, X-Requested-With, Content-Type, Accept, CLIENT_ID, REFRESH_TOKEN, ACCESS_TOKEN, REQUEST, ACTION",
+               "Access-Control-Allow-Methods" => "POST,GET,OPTIONS",
+               "Content-Type" => "application/json;charset=utf-8"}]
 
-  def Something.calculate_floor(num)
+  def Constants.calculate_floor(num)
     num/6+1
   end
 
-  def Something.calculate_room(num)
+  def Constants.calculate_room(num)
     (num+1)%6==0?6:(num+1)%6
   end
 
-  def Something.init_rand(num)
+  def Constants.init_rand(num)
     @nums = Array.new(num)
     0.upto(num-1) { |i| @nums[i] = i }
     @nums.sort! { |x,y| Random.rand() <=> 0.5 }
@@ -41,7 +41,7 @@ module Something
     'Complete!'
   end
 
-  def Something.new_str(len)
+  def Constants.new_str(len)
     @chars = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a
     @newstr = ""
     1.upto(len) { |i| @newstr << @chars[rand(@chars.size-1)] }
