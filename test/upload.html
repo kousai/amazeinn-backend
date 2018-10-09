@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Upload</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script type="text/javascript">
+        function fileSelected(userfile) {
+             upload(userfile);
+           }
+        function upload(userfile)
+           {
+              var files = userfile.files;
+              if(files.length == 0) return;
+              var form = new FormData(); 
+              var url = "http://127.0.0.1:4567/api/info";
+              var tempfile = files[0];
+              form.append("file", tempfile);
+              var xhr = new XMLHttpRequest();
+              xhr.open("POST", url, true);
+              xhr.setRequestHeader("CLIENT_ID", "Nw==\n");
+              xhr.setRequestHeader("REFRESH_TOKEN", "eyJhbGciOiJIUzI1NiJ9.eyJndWVzdCI6Im1vY2siLCJ0aW1lIjoiMTUzMzYzNjA1NSJ9.vWaLK9GD3S3dJxm1JcFL3vbWYmb9mIDH1PrLsWD8a0U");
+              xhr.setRequestHeader("ACCESS_TOKEN", "eyJhbGciOiJIUzI1NiJ9.eyJyZWZyZXNoIjoiMTUzMzYzNjA1NSIsInRpbWUiOiIxNTMzNjM2MDU1In0.NoG0Ul78f28jcPLQfzzkZR8Y8MsfE0LVKekeSKN5Z_Y");
+              xhr.setRequestHeader("REQUEST", "upload-file");
+              xhr.setRequestHeader("ACTION", "avatar");
+              xhr.send(form);
+           }
+    </script> 
+</head>
+<body>
+    <input id="upload" name="userfile" onchange="fileSelected(this);" type="file" />
+</body>
+</html>
