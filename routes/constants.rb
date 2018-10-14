@@ -32,20 +32,20 @@ module Constants
   end
 
   def Constants.init_rand(num)
-    @nums = Array.new(num)
-    0.upto(num-1) { |i| @nums[i] = i }
-    @nums.sort! { |x,y| Random.rand() <=> 0.5 }
+    _nums = Array.new(num)
+    0.upto(num-1) { |i| _nums[i] = i }
+    _nums.sort! { |x,y| Random.rand() <=> 0.5 }
     File.open("rand.txt", 'w') do |f|
-      0.upto(num-1) { |i| f.puts @nums[i] }
+      0.upto(num-1) { |i| f.puts _nums[i] }
     end
     'Complete!'
   end
 
   def Constants.new_str(len)
-    @chars = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a
-    @newstr = ""
-    1.upto(len) { |i| @newstr << @chars[rand(@chars.size-1)] }
-    return @newstr
+    _chars = ("a".."z").to_a + ("A".."Z").to_a + ("0".."9").to_a
+    _newstr = ""
+    1.upto(len) { |i| _newstr << _chars[rand(_chars.size-1)] }
+    _newstr
   end
 
 end
