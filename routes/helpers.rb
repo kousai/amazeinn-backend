@@ -566,6 +566,7 @@ def dislike_message(params, req)
 end
 
 def show_thumbups(params, req)
+  _res = Constants::RESPONSE
   _thumbs = Thumb.all(:guest_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i, :isthumbup => true, :order => [ :thumb_id.desc ])
   _num = _thumbs.length
   if _num == 0
@@ -591,6 +592,7 @@ def show_thumbups(params, req)
 end
 
 def show_thumbdowns(params, req)
+  _res = Constants::RESPONSE
   _thumbs = Thumb.all(:guest_id => Base64.decode64(req["HTTP_CLIENT_ID"]).to_i, :isthumbup => false, :order => [ :thumb_id.desc ])
   _num = _thumbs.length
   if _num == 0
