@@ -4,7 +4,9 @@ require_relative 'constants'
 require_relative 'helpers'
 
 get '/static/*/*/*.*' do
-  send_file 'static/' + params['splat'][0] + '/' + params['splat'][1] + '/' + params['splat'][2] + '.' + params['splat'][3]
+  _res = 'static/'
+  _res << params['splat'][0] << '/' << params['splat'][1] << '/' << params['splat'][2] << '.' << params['splat'][3]
+  send_file _res
 end
 
 options '/api/checkin' do

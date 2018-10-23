@@ -185,27 +185,27 @@ end
 def case_guest_info(params, req)
   _res = Constants::RESPONSE
   case req["HTTP_REQUEST"]
-    when "enter-index" then enter_index(params, req)
-    when "enter-room" then enter_room(params, req)
-    when "knock-door" then knock_door(params, req)
-    when "edit-password" then edit_password(params, req)
-    when "edit-profile" then edit_profile(params, req)
-    when "upload-file" then upload_file(params, req)
-    when "use-lift" then use_lift(params, req)
-    when "to-floor1" then to_floor1(params, req)
-    when "follow-guest" then follow_guest(params, req)
-    when "unfollow-guest" then unfollow_guest(params, req)
-    when "show-follows" then show_follows(params, req)
-    when "show-followers" then show_followers(params, req)
-    when "send-message" then send_message(params, req)
-    when "show-messages" then show_messages(params, req)
-    when "like-message" then like_message(params, req)
-    when "dislike-message" then dislike_message(params, req)
-    when "show-thumbups" then show_thumbups(params, req)
-    when "show-thumbdowns" then show_thumbdowns(params, req)
-    when "popular-messages" then popular_messages(params, req)
-    when "popular-guests" then popular_guests(params, req)
-    else [400] + _res + [{}.to_json]
+  when "enter-index" then enter_index(params, req)
+  when "enter-room" then enter_room(params, req)
+  when "knock-door" then knock_door(params, req)
+  when "edit-password" then edit_password(params, req)
+  when "edit-profile" then edit_profile(params, req)
+  when "upload-file" then upload_file(params, req)
+  when "use-lift" then use_lift(params, req)
+  when "to-floor1" then to_floor1(params, req)
+  when "follow-guest" then follow_guest(params, req)
+  when "unfollow-guest" then unfollow_guest(params, req)
+  when "show-follows" then show_follows(params, req)
+  when "show-followers" then show_followers(params, req)
+  when "send-message" then send_message(params, req)
+  when "show-messages" then show_messages(params, req)
+  when "like-message" then like_message(params, req)
+  when "dislike-message" then dislike_message(params, req)
+  when "show-thumbups" then show_thumbups(params, req)
+  when "show-thumbdowns" then show_thumbdowns(params, req)
+  when "popular-messages" then popular_messages(params, req)
+  when "popular-guests" then popular_guests(params, req)
+  else [400] + _res + [{}.to_json]
   end
 end
 
@@ -361,15 +361,15 @@ def edit_profile(params, req)
   _case = _action[2,4]
   _insts = JSON.parse(params["instruction"])
   case _case
-    when "nick" then _guest.update(:nickname => _insts["nickname"])
-    when "gend" then _guest.update(:gender => _insts["gender"])
-    when "emai" then _guest.update(:email => _insts["email"])
-    when "coun" then _guest.update(:country => _insts["country"])
-    when "intr" then _guest.update(:intro => _insts["intro"])
-    when "avat" then _guest.update(:avatar => _insts["avatar"])
-    when "bg_m" then _guest.update(:bg_music => _insts["bg_music"])
-    when "bg_i" then _guest.update(:bg_image => _insts["bg_image"])
-    else [400] + _res + [{}.to_json]
+  when "nick" then _guest.update(:nickname => _insts["nickname"])
+  when "gend" then _guest.update(:gender => _insts["gender"])
+  when "emai" then _guest.update(:email => _insts["email"])
+  when "coun" then _guest.update(:country => _insts["country"])
+  when "intr" then _guest.update(:intro => _insts["intro"])
+  when "avat" then _guest.update(:avatar => _insts["avatar"])
+  when "bg_m" then _guest.update(:bg_music => _insts["bg_music"])
+  when "bg_i" then _guest.update(:bg_image => _insts["bg_image"])
+  else [400] + _res + [{}.to_json]
   end
   [200] + _res + [{}.to_json]
 end
@@ -382,17 +382,17 @@ def upload_file(params, req)
   _now = Time.now
   _savename = _guest._id.to_s + '_' + _now.to_i.to_s + '_' + _now.usec.to_s + File.extname(_filename)
   case req["HTTP_ACTION"]
-    when "avatar" then _dir = File.join File.dirname(__FILE__), '..', 'static', 'images', 'avatar'
-    when "bg_music" then _dir = File.join File.dirname(__FILE__), '..', 'static', 'music', 'bg_music'
-    when "bg_image" then _dir = File.join File.dirname(__FILE__), '..', 'static', 'images', 'bg_image'
+  when "avatar" then _dir = File.join File.dirname(__FILE__), '..', 'static', 'images', 'avatar'
+  when "bg_music" then _dir = File.join File.dirname(__FILE__), '..', 'static', 'music', 'bg_music'
+  when "bg_image" then _dir = File.join File.dirname(__FILE__), '..', 'static', 'images', 'bg_image'
   end
   _target = File.join(_dir, _savename)
   FileUtils.mkdir_p(_dir) unless File.exist?(_dir)
   File.open(_target, 'w+') {|f| f.write File.read(_tempfile) }
   case req["HTTP_ACTION"]
-    when "avatar" then _url = base_url() + Constants::AVATAR_URL + _savename
-    when "bg_music" then _url = base_url() + Constants::BG_MUSIC_URL + _savename
-    when "bg_image" then _url = base_url() + Constants::BG_IMAGE_URL + _savename
+  when "avatar" then _url = base_url() + Constants::AVATAR_URL + _savename
+  when "bg_music" then _url = base_url() + Constants::BG_MUSIC_URL + _savename
+  when "bg_image" then _url = base_url() + Constants::BG_IMAGE_URL + _savename
   end
   _guest.update(req["HTTP_ACTION"] => _url)
   [200] + _res + [{}.to_json]
