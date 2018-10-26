@@ -1,0 +1,180 @@
+doctype html
+html
+  head
+    meta charset="utf-8"
+    title AMazeInn Back
+    meta name="robots" content="noindex,nofollow"
+    link rel="icon" type="image/png" href="images/favicon.png"
+    link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"
+    script src="https://cdn.jsdelivr.net/npm/vue"
+    script src="https://unpkg.com/element-ui/lib/index.js"
+    script src="https://unpkg.com/axios/dist/axios.min.js"
+    /[if lt IE 9]
+      script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"
+  body style="display: flex; flex-flow: column; min-height: 100vh"
+    div id="app" style="flex: 1"
+      div id="header" style="text-align: center; margin-top: 5%"
+        <el-badge :value="'...'">
+          <el-button size="medium" type="info" plain @click="visible = true">AMazeInn Back</el-button>
+        </el-badge>
+      <div v-if="!isLogedIn" style="text-align: center; margin-top: 5%; margin-left: 40%">
+        <el-row>
+          <el-col :span="8">
+            <el-form :model="cred" label-width="100px">
+              <el-form-item label="Account">
+                <el-input v-model="cred.account" placeholder="Input your account" autocomplete="off"></el-input>
+              </el-form-item>
+              <el-form-item label="Password">
+                <el-input type="password" v-model="cred.password" placeholder="Input your password" autocomplete="off"></el-input>
+              </el-form-item>
+              <el-form-item>
+                <el-button type="primary" @click="login" style="width:100%">Login</el-button>
+              </el-form-item>
+            </el-form>
+          </el-col>
+        </el-row>
+      </div>
+      <div v-if="isLogedIn" style="margin-top: 2%">
+        <el-row style="text-align: center; margin-left: 40%">
+          <el-col :span="8">
+            span Admin: LogedIn&nbsp;&nbsp;
+            <span>
+              <el-button type="primary" @click="logout">Logout</el-button>
+            </span>
+          </el-col>
+        </el-row>
+        <el-row style="margin-left: 33%">
+          <el-col :span="16">
+            <el-form :inline="true" style="padding-top: 30px">
+              <el-form-item label="Drop Schema">
+                <el-select v-model="schema" placeholder="Choose">
+                  <el-option v-for="item in schemaList" :key="item" :label="item" :value="item">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-button type="primary" @click="dropFunc">Drop</el-button>
+            </el-form>
+          </el-col>
+        </el-row>
+        <el-row style="margin-left: 24%">
+          <el-col :span="20">
+            <el-form :inline="true" style="padding-top: 10px">
+              <el-form-item label="System Init">
+                <el-select v-model="init.type" placeholder="Choose">
+                  <el-option v-for="item in initList" :key="item" :label="item" :value="item">
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item>
+                <el-input type="number" v-model="init.amount" placeholder="Amount"></el-input>
+              </el-form-item>
+              <el-button type="primary" @click="initFunc">Init</el-button>
+            </el-form>
+          </el-col>
+        </el-row>
+      </div>
+      p id="hiden" style="display:none"
+        | #{@isLogedIn}
+      <el-dialog :visible.sync="visible" title="Brief Summary">
+        p #{@brief_guests}
+        p #{@brief_messages}
+        p #{@brief_contacts}
+        p #{@brief_thumbs}
+        p #{@brief_rooms}
+      </el-dialog>
+    div id="footer" style="text-align: center"
+      Copyright © 2018 calberoc/kousai (version 0.1)
+
+  javascript:
+    new Vue({
+      el: '#app',
+
+      data() {
+        return {
+          cred: {
+            account: '',
+            password: ''
+          },
+          init: {
+            type: 'mock',
+            amount: 0
+          },
+          initList: ['random', 'room', 'mock'],
+          schema: 'Guest',
+          schemaList: ['Guest', 'Message', 'Contact', 'Thumb', 'Room'],
+          guests: [],
+          messages: [],
+          contacts: [],
+          thumbs: [],
+          rooms: [],
+          isLogedIn: false,
+          visible: false
+        }
+      },
+
+      mounted() {
+        this.checkLogin()
+      },
+
+      methods: {
+        login () {
+          axios.post('/admin/login', {
+            account: this.cred.account,
+            password: this.cred.password
+          })
+          .then((response) => {
+            this.isLogedIn = true
+            this.guests = response.data.guests
+            this.messages = response.data.messages
+            this.contacts = response.data.contacts
+            this.thumbs = response.data.thumbs
+            this.rooms = response.data.rooms
+          })
+          .catch((error) => {
+            alert('Failed to Login')
+          })
+        },
+
+        logout () {
+          axios.post('/admin/logout', {})
+          .then((response) => {
+            this.cred.account = ''
+            this.cred.password = ''
+            this.isLogedIn = false
+          })
+          .catch((error) => {
+            alert('Failed to Logout')
+          })
+        },
+
+        checkLogin () {
+          const hiden = document.getElementById('hiden')
+          this.isLogedIn = (hiden.innerText === 'true')
+        },
+
+        dropFunc () {
+          axios.post('/admin/drop', {
+            schema: this.schema
+          })
+          .then((response) => {
+            alert('OK')
+          })
+          .catch((error) => {
+            alert('Failed')
+          })
+        },
+
+        initFunc () {
+          axios.post('/admin/init', {
+            type: this.init.type,
+            amount: Number(this.init.amount)
+          })
+          .then((response) => {
+            alert('OK')
+          })
+          .catch((error) => {
+            alert('Failed')
+          })
+        }
+      }
+    })
