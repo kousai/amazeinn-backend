@@ -1,5 +1,5 @@
 ruby "2.2.10"
-source 'https://gems.ruby-china.org/'
+source 'https://gems.ruby-china.com/'
 #source :rubygems
 gem "sinatra"
 gem "puma"
@@ -7,3 +7,4 @@ gem "datamapper"
 gem "dm-postgres-adapter"
 gem "bcrypt"
 gem "jwt"
+gem "slim"
