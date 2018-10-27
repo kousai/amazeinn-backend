@@ -72,6 +72,26 @@ html
             </el-form>
           </el-col>
         </el-row>
+        <el-table :data="guests" style="width: 100%; margin-left: 20%">
+					<el-table-column fixed prop="_id" label="ID" width="100">
+					</el-table-column><el-table-column fixed prop="name" label="Name" width="100">
+					</el-table-column><el-table-column fixed prop="gender" label="Gender" width="100">
+					</el-table-column><el-table-column fixed prop="created_on" label="Created On" width="250">
+					</el-table-column><el-table-column fixed label="Edit" width="100">
+						<template slot-scope="scope">
+							<i class="el-icon-edit" @click="editDialogVisible = true" style="color: blue;cursor: pointer"></i>
+						</template>
+					</el-table-column>
+					<el-table-column fixed label="Delete" width="100">
+						<template slot-scope="scope">
+							<i class="el-icon-delete" @click="deleteDialogVisible = true" style="color: red;cursor: pointer"></i>
+						</template></el-table-column></el-table><el-dialog title="Attention" :visible.sync="deleteDialogVisible" width="30%">
+					<span>Are you sure to delete？</span>
+					<span slot="footer" class="dialog-footer"><el-button @click="deleteDialogVisible = false">Cancel</el-button><el-button type="primary" @click="deleteDialogVisible = false,deleteFunc()">Delete</el-button></span></el-dialog><el-dialog title="Attention" :visible.sync="editDialogVisible" width="30%">
+					<span>Are you sure to edit？</span>
+					<span slot="footer" class="dialog-footer"><el-button @click="editDialogVisible = false">Cancel</el-button><el-button type="primary" @click="editDialogVisible = false,editFunc()">Edit</el-button></span></el-dialog><el-dialog title="Result" :visible.sync="resultDialogVisible" width="30%">
+					<span>{{message}}</span>
+					<span slot="footer" class="dialog-footer"><el-button @click="resultDialogVisible = false">Close</el-button></span></el-dialog>
       </div>
       p id="hiden" style="display:none"
         | #{@isLogedIn}
@@ -82,7 +102,7 @@ html
         p #{@brief_thumbs}
         p #{@brief_rooms}
       </el-dialog>
-    div id="footer" style="text-align: center"
+    div id="footer" style="text-align: center; color: gray"
       Copyright © 2018 calberoc/kousai (version 0.1)
 
   javascript:
@@ -108,7 +128,11 @@ html
           thumbs: [],
           rooms: [],
           isLogedIn: false,
-          visible: false
+          visible: false,
+          deleteDialogVisible: false,
+          editDialogVisible: false,
+          resultDialogVisible: false,
+          message: ''
         }
       },
 
@@ -131,7 +155,8 @@ html
             this.rooms = response.data.rooms
           })
           .catch((error) => {
-            alert('Failed to Login')
+            this.message = 'Failed to Login'
+            this.resultDialogVisible = true
           })
         },
 
@@ -143,13 +168,28 @@ html
             this.isLogedIn = false
           })
           .catch((error) => {
-            alert('Failed to Logout')
+            this.message = 'Failed to Logout'
+            this.resultDialogVisible = true
           })
         },
 
         checkLogin () {
           const hiden = document.getElementById('hiden')
           this.isLogedIn = (hiden.innerText === 'true')
+          if (this.isLogedIn) {
+            axios.post('/admin/refresh', {})
+          .then((response) => {
+            this.guests = response.data.guests
+            this.messages = response.data.messages
+            this.contacts = response.data.contacts
+            this.thumbs = response.data.thumbs
+            this.rooms = response.data.rooms
+          })
+          .catch((error) => {
+            this.message = 'Failed to Refresh'
+            this.resultDialogVisible = true
+          })
+          }
         },
 
         dropFunc () {
@@ -157,10 +197,12 @@ html
             schema: this.schema
           })
           .then((response) => {
-            alert('OK')
+            this.message = 'Drop successful'
+            this.resultDialogVisible = true
           })
           .catch((error) => {
-            alert('Failed')
+            this.message = 'Failed to Drop'
+            this.resultDialogVisible = true
           })
         },
 
@@ -170,11 +212,23 @@ html
             amount: Number(this.init.amount)
           })
           .then((response) => {
-            alert('OK')
+            this.message = 'Init successful'
+            this.resultDialogVisible = true
           })
           .catch((error) => {
-            alert('Failed')
+            this.message = 'Failed to Init'
+            this.resultDialogVisible = true
           })
+        },
+
+        editFunc () {
+          this.message = 'In progress'
+          this.resultDialogVisible = true
+        },
+
+        deleteFunc () {
+          this.message = 'Nothing happened'
+          this.resultDialogVisible = true
         }
       }
     })
