@@ -46,6 +46,15 @@ post '/admin/delete' do
   200
 end
 
+post '/admin/refresh' do
+  _guests = Guest.all
+  _messages = Message.all
+  _contacts = Contact.all
+  _thumbs = Thumb.all
+  _rooms = Room.all
+  {guests: _guests, messages: _messages, contacts: _contacts, thumbs: _thumbs, rooms: _rooms}.to_json
+end
+
 post '/admin/drop' do
   _body = JSON.parse(request.body.read)
   case _body["schema"]
