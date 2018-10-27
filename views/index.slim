@@ -151,12 +151,12 @@ html
       methods: {
         login () {
           if(this.cred.account == '' || this.cred.password == '') {
-						this.$message({
-							message: 'Account or Password required！',
-							type: 'error'
-						})
-						return
-					}
+            this.$message({
+              message: 'Account or Password required！',
+              type: 'error'
+            })
+            return
+          }
           axios.post('/admin/login', {
             account: this.cred.account,
             password: this.cred.password
@@ -169,15 +169,15 @@ html
             this.thumbs = response.data.thumbs
             this.rooms = response.data.rooms
             this.$message({
-							message: 'Login successful！',
-							type: 'success'
-						})
+              message: 'Login successful！',
+              type: 'success'
+            })
           })
           .catch((error) => {
             this.$message({
-							message: 'Incorrect Account or Password！',
-							type: 'error'
-						})
+              message: 'Incorrect Account or Password！',
+              type: 'error'
+            })
           })
         },
 
@@ -188,15 +188,15 @@ html
             this.cred.password = ''
             this.isLogedIn = false
             this.$message({
-							message: 'Logout successful！',
-							type: 'success'
-						})
+              message: 'Logout successful！',
+              type: 'success'
+            })
           })
           .catch((error) => {
             this.$message({
-							message: 'Failed to Logout！',
-							type: 'error'
-						})
+              message: 'Failed to Logout！',
+              type: 'error'
+            })
           })
         },
 
@@ -214,9 +214,9 @@ html
           })
           .catch((error) => {
             this.$message({
-							message: 'Failed！',
-							type: 'error'
-						})
+              message: 'Failed！',
+              type: 'error'
+            })
           })
           }
         },
@@ -227,15 +227,15 @@ html
           })
           .then((response) => {
             this.$message({
-							message: 'Drop successful！',
-							type: 'success'
-						})
+              message: 'Drop successful！',
+              type: 'success'
+            })
           })
           .catch((error) => {
             this.$message({
-							message: 'Failed to Drop！',
-							type: 'error'
-						})
+              message: 'Failed to Drop！',
+              type: 'error'
+            })
           })
         },
 
@@ -246,30 +246,30 @@ html
           })
           .then((response) => {
             this.$message({
-							message: 'Init successful！',
-							type: 'success'
-						})
+              message: 'Init successful！',
+              type: 'success'
+            })
           })
           .catch((error) => {
             this.$message({
-							message: 'Failed to Init！',
-							type: 'error'
-						})
+              message: 'Failed to Init！',
+              type: 'error'
+            })
           })
         },
 
         editFunc () {
           this.$message({
-							message: 'In progress... Nothing happened！',
-							type: 'error'
-						})
+            message: 'In progress... Nothing happened！',
+            type: 'error'
+          })
         },
 
         deleteFunc () {
           this.$message({
-							message: 'In progress... Nothing happened！',
-							type: 'error'
-						})
+            message: 'In progress... Nothing happened！',
+            type: 'error'
+          })
         }
       }
     })
