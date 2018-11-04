@@ -46,6 +46,10 @@ def base_url()
   end
 end
 
+def guests_limit()
+  IO.readlines(Constants::DIR_RAND)
+end
+
 def guest_create(obj)
   _res = Constants::RESPONSE
   if Guest.last(:name => obj["username"]).nil?
@@ -59,8 +63,8 @@ def guest_create(obj)
         :created_on => Time.now,
         :isreal => true)
       _newguest.save
-      if _newguest._id <= Constants::GUESTS_LIMIT
-        _arr = IO.readlines(Constants::DIR_RAND)
+      _arr = guests_limit()
+      if _newguest._id <= _arr.length
         _newguest.update(
           :floor_num => Constants.calculate_floor(_arr[_newguest._id-1].chomp.to_i),
           :room_num => Constants.calculate_room(_arr[_newguest._id-1].chomp.to_i))

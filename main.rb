@@ -2,6 +2,7 @@ require 'sinatra'
 require 'slim'
 require_relative 'models/init'
 require_relative 'routes/init'
+require_relative 'routes/constants'
 
 use Rack::Session::Pool, :expire_after => 3600
 
@@ -63,6 +64,7 @@ post '/admin/drop' do
   when "Contact" then Contact.auto_migrate!
   when "Thumb" then Thumb.auto_migrate!
   when "Room" then Room.auto_migrate!
+  when "Rand" then Constants.drop_rand()
   end
 end
 

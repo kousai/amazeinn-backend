@@ -1,7 +1,5 @@
 module Constants
 
-  GUESTS_LIMIT = 594
-
   SECRET = 'My$ecretK3y=AMazeInn'
 
   DIR_RAND = 'rand.txt'
@@ -31,11 +29,18 @@ module Constants
     (num+1)%6==0?6:(num+1)%6
   end
 
+  def Constants.drop_rand()
+    File.open("rand.txt", 'w') do |f|
+    end
+    'Complete!'
+  end
+
   def Constants.init_rand(num)
     _nums = Array.new(num)
-    0.upto(num-1) { |i| _nums[i] = i }
+    _arr = IO.readlines(Constants::DIR_RAND)
+    0.upto(num-1) { |i| _nums[i] = i + _arr.length }
     _nums.sort! { |x,y| Random.rand() <=> 0.5 }
-    File.open("rand.txt", 'w') do |f|
+    File.open("rand.txt", 'a') do |f|
       0.upto(num-1) { |i| f.puts _nums[i] }
     end
     'Complete!'
