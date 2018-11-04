@@ -32,7 +32,7 @@ module Constants
   def Constants.drop_rand()
     File.open("rand.txt", 'w') do |f|
     end
-    'Complete!'
+    'Drop Rand Complete!'
   end
 
   def Constants.init_rand(num)
@@ -43,7 +43,7 @@ module Constants
     File.open("rand.txt", 'a') do |f|
       0.upto(num-1) { |i| f.puts _nums[i] }
     end
-    'Complete!'
+    'Init Rand Complete!'
   end
 
   def Constants.new_str(len)
