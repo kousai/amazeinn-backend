@@ -131,7 +131,7 @@ html
           },
           initList: ['random', 'room', 'mock'],
           schema: 'Guest',
-          schemaList: ['Guest', 'Message', 'Contact', 'Thumb', 'Room'],
+          schemaList: ['Guest', 'Message', 'Contact', 'Thumb', 'Room', 'Rand'],
           guests: [],
           messages: [],
           contacts: [],
@@ -270,6 +270,26 @@ html
             message: 'In progress... Nothing happened！',
             type: 'error'
           })
+        },
+
+        getCookie (cname) {
+          const name = cname + '='
+          const ca = document.cookie.split(';')
+          for (let i = 0; i < ca.length; i++) 
+          {
+            let c = ca[i].trim()
+            if (c.indexOf(name) === 0) return c.substring(name.length, c.length)
+          }
+          return ''
+        },
+
+        delCookie(key) {
+          let date = new Date()
+          date.setTime(date.getTime() - 1)
+          const delValue = getCookie(key)
+          if (!!delValue) {
+            document.cookie = key + '=' + delValue + ';expires=' + date.toGMTString()
+          }
         }
       }
     })
