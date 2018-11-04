@@ -28,7 +28,7 @@ html
                 <el-input type="password" v-model="cred.password" placeholder="Input your password" autocomplete="off"></el-input>
               </el-form-item>
               <el-form-item>
-                <el-button type="primary" @click="login" style="width:100%">Login</el-button>
+                <el-button type="primary" :loading="loading.login" @click="login" style="width:100%">Login</el-button>
               </el-form-item>
             </el-form>
           </el-col>
@@ -39,7 +39,7 @@ html
           <el-col :span="8">
             span Admin: LogedIn&nbsp;&nbsp;
             <span>
-              <el-button type="primary" @click="logout">Logout</el-button>
+              <el-button type="primary" :loading="loading.logout" @click="logout">Logout</el-button>
             </span>
           </el-col>
         </el-row>
@@ -52,7 +52,7 @@ html
                   </el-option>
                 </el-select>
               </el-form-item>
-              <el-button type="primary" @click="dropFunc">Drop</el-button>
+              <el-button type="primary" :loading="loading.drop"@click="dropFunc">Drop</el-button>
             </el-form>
           </el-col>
         </el-row>
@@ -68,7 +68,7 @@ html
               <el-form-item>
                 <el-input type="number" v-model="init.amount" placeholder="Amount"></el-input>
               </el-form-item>
-              <el-button type="primary" @click="initFunc">Init</el-button>
+              <el-button type="primary" :loading="loading.init"@click="initFunc">Init</el-button>
             </el-form>
           </el-col>
         </el-row>
@@ -140,7 +140,13 @@ html
           isLogedIn: false,
           visible: false,
           deleteDialogVisible: false,
-          editDialogVisible: false
+          editDialogVisible: false,
+          loading: {
+            login: false,
+            logout: false,
+            drop: false,
+            init: false
+          }
         }
       },
 
@@ -157,11 +163,13 @@ html
             })
             return
           }
+          this.loading.login = true
           axios.post('/admin/login', {
             account: this.cred.account,
             password: this.cred.password
           })
           .then((response) => {
+            this.loading.login = false
             this.isLogedIn = true
             this.guests = response.data.guests
             this.messages = response.data.messages
@@ -174,6 +182,7 @@ html
             })
           })
           .catch((error) => {
+            this.loading.login = false
             this.$message({
               message: 'Incorrect Account or Password！',
               type: 'error'
@@ -182,17 +191,20 @@ html
         },
 
         logout () {
+          this.loading.logout = true
           axios.post('/admin/logout', {})
           .then((response) => {
             this.cred.account = ''
             this.cred.password = ''
             this.isLogedIn = false
+            this.loading.logout = false
             this.$message({
               message: 'Logout successful！',
               type: 'success'
             })
           })
           .catch((error) => {
+            this.loading.logout = false
             this.$message({
               message: 'Failed to Logout！',
               type: 'error'
@@ -222,16 +234,19 @@ html
         },
 
         dropFunc () {
+          this.loading.drop = true
           axios.post('/admin/drop', {
             schema: this.schema
           })
           .then((response) => {
+            this.loading.drop = false
             this.$message({
               message: 'Drop successful！',
               type: 'success'
             })
           })
           .catch((error) => {
+            this.loading.drop = false
             this.$message({
               message: 'Failed to Drop！',
               type: 'error'
@@ -240,17 +255,20 @@ html
         },
 
         initFunc () {
+          this.loading.init = true
           axios.post('/admin/init', {
             type: this.init.type,
             amount: Number(this.init.amount)
           })
           .then((response) => {
+            this.loading.init = false
             this.$message({
               message: 'Init successful！',
               type: 'success'
             })
           })
           .catch((error) => {
+            this.loading.init = false
             this.$message({
               message: 'Failed to Init！',
               type: 'error'

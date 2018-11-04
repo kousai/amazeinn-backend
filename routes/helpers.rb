@@ -12,9 +12,9 @@ def init_room(num)
   0.upto(num-1) { |i|
     _init = Room.new(:room_floor => Constants.calculate_floor(i), :room_num => Constants.calculate_room(i))
     _init.save
-    puts "floor#{Constants.calculate_floor(i).to_s}  room#{Constants.calculate_room(i).to_s}  OK!"
+    # puts "floor#{Constants.calculate_floor(i).to_s}  room#{Constants.calculate_room(i).to_s}  OK!"
   }
-  'Complete!'
+  'Init Room Complete!'
 end
 
 def init_mock(num)
@@ -25,9 +25,9 @@ def init_mock(num)
     _guest = Guest.last(:name => _name)
     _genders = ['Male', 'Female', 'Other']
     _guest.update(:isreal => false, :gender => _genders[Random.rand(3)-1])
-    puts "mock#{(i+1).to_s}: #{_name}  Created!"
+    # puts "mock#{(i+1).to_s}: #{_name}  Created!"
   }
-  'Complete!'
+  'Init Mock Complete!'
 end
 
 def token_generate(pl)
